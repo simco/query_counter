@@ -183,4 +183,47 @@ class QueryCounterTest < ActiveSupport::TestCase
     assert_equal current_delete_count, ActiveRecord::QueryCounter.instance.count('delete')
     assert_equal current_count, ActiveRecord::QueryCounter.instance.count
   end
+
+  test "restart will reset counter and ensure that it is started" do
+    # setup
+    ActiveRecord::QueryCounter.instance.reset
+    ActiveRecord::QueryCounter.instance.start
+
+    Status.count
+    assert_equal 1, ActiveRecord::QueryCounter.instance.count
+
+    ActiveRecord::QueryCounter.instance.stop
+    assert !ActiveRecord::QueryCounter.instance.started?
+
+    # main test
+    ActiveRecord::QueryCounter.instance.restart
+    Status.first
+
+    # validate
+    assert ActiveRecord::QueryCounter.instance.started?
+    assert_equal 1, ActiveRecord::QueryCounter.instance.count
+  end
+
+  test "within will start and stop a new query_counter" do
+    ActiveRecord::QueryCounter.instance.reset
+    ActiveRecord::QueryCounter.instance.start
+
+    Status.count
+    assert_equal 1, ActiveRecord::QueryCounter.instance.count
+
+    ActiveRecord::QueryCounter.instance.stop
+    assert !ActiveRecord::QueryCounter.instance.started?
+    
+    ActiveRecord::QueryCounter.instance.within do
+      assert ActiveRecord::QueryCounter.instance.started?
+      assert_equal 0, ActiveRecord::QueryCounter.instance.count
+
+      Status.first
+
+      assert_equal 1, ActiveRecord::QueryCounter.instance.count
+    end
+
+    assert !ActiveRecord::QueryCounter.instance.started?
+    
+  end
 end

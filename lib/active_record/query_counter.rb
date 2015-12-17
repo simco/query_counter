@@ -16,6 +16,11 @@ module ActiveRecord
       @start_query_counter || false
     end
 
+    def restart
+      reset
+      start
+    end
+
     def reset
       (@query_counter = {}) == {} 
     end
@@ -24,6 +29,12 @@ module ActiveRecord
       sql_operation = sql_operation.to_s.upcase unless sql_operation.nil?
 
       (@query_counter || {}).sum { |key, value| (COUNT_QUERY_TYPE.include?(key) && sql_operation.nil?) || sql_operation == key ? value : 0 }
+    end
+
+    def within
+      restart
+      yield
+      stop
     end
 
     private
