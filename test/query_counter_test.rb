@@ -224,6 +224,5 @@ class QueryCounterTest < ActiveSupport::TestCase
     end
 
     assert !ActiveRecord::QueryCounter.instance.started?
-    
   end
 end
