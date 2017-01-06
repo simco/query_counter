@@ -4,6 +4,10 @@ module ActiveRecord
 
     COUNT_QUERY_TYPE = %w(SELECT UPDATE INSERT DELETE).freeze
 
+    def initialize
+      @start_query_counter = false
+    end
+
     def start
       @start_query_counter = true
     end
@@ -13,7 +17,8 @@ module ActiveRecord
     end
 
     def started?
-      @start_query_counter || false
+      # @start_query_counter || false
+      @start_query_counter
     end
 
     def restart
